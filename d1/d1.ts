@@ -9,8 +9,6 @@ export function d1() {
 
 	const lines = inp.split("\n") as string[];
 
-	const nums: [number, number][] = [];
-
 	const left: number[] = [];
 	const right: number[] = [];
 
@@ -19,7 +17,7 @@ export function d1() {
 		const groups = line.match(/\d+/g);
 
 		if (!groups || groups.length !== 2) {
-			console.warn("Weird input detected on line #", i);
+			console.warn("Weird input (no double groups) detected on line #", i);
 			console.dir(line);
 			continue;
 		}
@@ -28,7 +26,7 @@ export function d1() {
 		const rightN = Number(groups[1]);
 
 		if (isNaN(leftN) || isNaN(rightN)) {
-			console.warn("Weird input detected on line #", i);
+			console.warn("Weird input (nan) detected on line #", i);
 			console.dir(line);
 			continue;
 		}
