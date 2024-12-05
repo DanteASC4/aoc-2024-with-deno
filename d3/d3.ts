@@ -1,7 +1,8 @@
-import { join, resolve } from "@std/path";
-import { bold, cyan, magenta, yellow } from "@std/fmt/colors";
+import { bold, cyan, magenta, red, yellow } from "@std/fmt/colors";
 import { humanize } from "../utils/misc.ts";
+import { readInpLines } from "../utils/files.ts";
 const target = /mul\(\d{1,3},\d{1,3}\)/g;
+const fullTarget = /mul\(\d{1,3},\d{1,3}\)|do\(\)|don't\(\)/g;
 
 const parseMul = (mulStr: string) => {
 	const parts = mulStr.split("");
@@ -61,11 +62,56 @@ const parseLine = (line: string) => {
 	return sum;
 };
 
-export function d3part1() {
-	if (!import.meta.dirname) return;
-	const fp = resolve(join(import.meta.dirname, "..", "inputs", "d3.txt"));
-	const inp = Deno.readTextFileSync(fp);
-	const lines = inp.split("\n").filter((l) => l !== "") as string[];
+const gatherInstructions = (line: string) => {
+	const matches = line.match(fullTarget);
+	if (!matches) {
+		console.log(yellow("Could not match against line!"));
+		console.log(line);
+		return [];
+	}
+
+	const instructions = matches.map((m) => m);
+	if (instructions.length === 0) {
+		console.log(yellow("No instructions found for line!"));
+		console.log(line);
+		return [];
+	}
+
+	return instructions;
+};
+
+const parseInstructions = (instructions: string[]) => {
+	let cInst = "do";
+	const muls: string[] = [];
+
+	while (instructions.length > 0) {
+		const curr = instructions.shift();
+		if (curr) {
+			if (curr === "do()") cInst = "do";
+			else if (curr === "don't()") cInst = "don't";
+			else {
+				if (cInst === "do") muls.push(curr);
+			}
+		}
+	}
+
+	console.log(muls);
+	const products = muls.map(parseMul);
+	if (products.some((p) => isNaN(p))) {
+		console.log(muls);
+		throw Error("Failed to parse a mul!");
+	}
+
+	const sum = products.reduce((p, c) => p + c, 0);
+	return sum;
+};
+
+export async function d3part1() {
+	const lines = await readInpLines("d3.txt");
+	if (!lines) {
+		console.log(red(bold("[D3P1] No input!")));
+		return;
+	}
 
 	const sums: number[] = [];
 	for (const line of lines) {
@@ -80,7 +126,22 @@ export function d3part1() {
 	console.log(sums);
 	console.log(sumSum);
 	console.log(`Final answer: ${magenta(bold(humanize(sumSum)))}`);
+}
 
-	//const ans = parseMul("mul(2,4)");
-	//console.log(ans);
+export async function d3part2() {
+	const lines = await readInpLines("d3.txt");
+	if (!lines) {
+		console.log(red(bold("[D3P2] No input!")));
+		return;
+	}
+
+	const allInstructions = [];
+	for (const line of lines) {
+		const instr = gatherInstructions(line);
+		allInstructions.push(...instr);
+	}
+
+	const evaluated = parseInstructions(allInstructions);
+	console.log(evaluated);
+	console.log(`Final answer: ${magenta(bold(humanize(evaluated)))}`);
 }
