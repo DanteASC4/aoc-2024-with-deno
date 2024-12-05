@@ -1,6 +1,6 @@
 import { join, resolve } from "@std/path";
-import { chunk, humanize } from "../utils/misc.ts";
-import { cyan, bold } from "@std/fmt/colors";
+import { humanize } from "../utils/misc.ts";
+import { cyan, bold, magenta } from "@std/fmt/colors";
 
 const isAsc = (A: number[]) => {
 	for (let i = 0; i < A.length; i++) {
@@ -93,6 +93,75 @@ const isReportSafe = (rep: number[]) => {
 	return true;
 };
 
+const countRepErrs = (rep: number[]) => {
+	let numErrs = 0;
+	let distUpErr = false;
+	let distDwErr = false;
+
+	const isAscOrDsc = isAsc(rep) || isDsc(rep);
+	if (!isAscOrDsc) {
+		numErrs++;
+	}
+
+	for (let i = 0; i < rep.length; i++) {
+		if (distUpErr && distDwErr) continue;
+
+		if (i === 0) {
+			const c = rep[i];
+			const n = rep[i + 1];
+
+			const dist = Math.abs(c - n);
+			const badDist = isBadDist(dist);
+			if (badDist && !distUpErr) {
+				numErrs++;
+				distUpErr = true;
+			}
+		} else if (i === rep.length - 1) {
+			const c = rep[i];
+			const p = rep[i - 1];
+
+			const dist = Math.abs(c - p);
+			const badDist = isBadDist(dist);
+			if (badDist && !distDwErr) {
+				console.log(badDist);
+				numErrs++;
+				distDwErr = true;
+			}
+		} else {
+			const p = rep[i - 1];
+			const c = rep[i];
+			const n = rep[i + 1];
+
+			const dist1 = Math.abs(c - p);
+			const badDist1 = isBadDist(dist1);
+			const dist2 = Math.abs(c - n);
+			const badDist2 = isBadDist(dist2);
+
+			if (badDist1 && !distDwErr) {
+				distDwErr = true;
+				numErrs++;
+			}
+
+			if (badDist2 && !distUpErr) {
+				distUpErr = true;
+				numErrs++;
+			}
+		}
+	}
+
+	return numErrs;
+};
+
+const findFirstBad = (rep: number[]) => {
+	// tolerate a single bad level
+	// Find idx's of:
+	// - non-asc or non-dsc value
+	// - too big a jump value
+	//
+	// if there are more than 2, it's unsafe regardless
+	// check if safe without either, if so it's safe else unsafe
+};
+
 export function d2part1() {
 	if (!import.meta.dirname) return;
 	const fp = resolve(join(import.meta.dirname, "..", "inputs", "d2.txt"));
@@ -141,6 +210,42 @@ export function d2part1() {
 	//Deno.writeTextFileSync(ofp, s);
 	//
 	//console.log(s);
+
+	console.log(
+		`Found ${cyan(bold(humanize(safeReports.length)))} (${cyan(String(safeReports.length))}) safe reports!`,
+	);
+}
+
+export function d2part2() {
+	if (!import.meta.dirname) return;
+	const fp = resolve(join(import.meta.dirname, "..", "inputs", "d2_t.txt"));
+	const inp = Deno.readTextFileSync(fp);
+	const lines = inp.split("\n") as string[];
+	const reports: number[][] = [];
+
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i];
+		const groups = line.match(/\d+/g);
+
+		if (!groups) {
+			console.warn("Weird input (no groups) detected on line #", i);
+			console.dir(line);
+			continue;
+		}
+
+		const nums = groups.map(Number);
+
+		reports.push(nums);
+	}
+
+	const safeReports = reports.filter((report) => {
+		console.log("---");
+		console.log(report);
+		const numErrors = countRepErrs(report);
+		console.log(`NumE: ${magenta(String(numErrors))}`);
+
+		return numErrors <= 1;
+	});
 
 	console.log(
 		`Found ${cyan(bold(humanize(safeReports.length)))} (${cyan(String(safeReports.length))}) safe reports!`,

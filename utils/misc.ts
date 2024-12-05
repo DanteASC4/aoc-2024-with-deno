@@ -13,3 +13,10 @@ export function humanize(num: number) {
 		.join(",");
 	return righted;
 }
+
+export function chunk<T>(A: T[], size: number) {
+	return A.reduce((acc, _, i) => {
+		acc.push(A.slice(i, i + size));
+		return acc;
+	}, [] as T[][]);
+}
