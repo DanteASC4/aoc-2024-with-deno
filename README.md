@@ -26,3 +26,7 @@ Part 2 had me scratching my head a bit, prob because of how I did my solution to
 Confused myself with the bit of the instructions that said "overlapping other words" and the example's first line showing "XXMAS", spent much longer than woulda been actually necessary 💀
 
 Even though it was second try (minor logic error) I felt part 2 was easier, but that's probably because I over-complicated part 1 lol.
+
+### Day 5
+
+Woulda had it first try but I rounded the middle number index calculation at the end instead of using `Math.floor`, oops.
