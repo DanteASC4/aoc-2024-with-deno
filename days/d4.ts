@@ -118,13 +118,8 @@ const checkDir = (
 
 	do {
 		const nextC = full[nextIdx];
-		const thisC = partial.length > 0 ? partial.at(-1) : nextC;
-		if (!thisC) throw Error("Failed to get current character");
-		partial += nextC; // Add next non identical character...?
-		//const truePartial = partial;
-		const truePartial = partial;
-		//if (partial.length === search.length) return partial === search; // Handy stop condition
-		if (truePartial.length === search.length) return partial === search; // Handy stop condition
+		partial += nextC;
+		if (partial.length === search.length) return partial === search; // Handy stop condition
 		const part = search.substring(0, iter);
 		//console.log(
 		//	"Does ",
@@ -132,21 +127,94 @@ const checkDir = (
 		//	"match the same len from search, which is",
 		//	underline(part),
 		//);
-		isMatching = truePartial === part || nextC === thisC;
-		//isMatching = partial === part;
+		isMatching = partial === part;
 		//console.log(
 		//	`${underline(truePartial)} === ${underline(part)} -> ${magenta(String(isMatching))}`,
 		//);
 		iter++;
 		nextIdx += offset;
-
-		// Bruh I was doing # - -N so the "-" was actually adding
-		//if (dir === "ul" || dir === "u" || dir === "ur" || dir === "l") {
-		//	nextIdx -= offset;
-		//} else {
-		//	nextIdx += offset;
-		//}
 	} while (isMatching && iter <= maxIter);
+};
+
+const checkSquare = (
+	full: string,
+	from: number,
+	rowlen: number,
+	maxrow: number,
+) => {
+	// Bounds check:
+
+	const row = (from - (from % rowlen)) / rowlen;
+	const col = from % rowlen;
+
+	if (row === 0 || row === maxrow) return false;
+	//if (row < 1 || row > maxrow - 1) {
+	//	console.log(`Skipping row ${underline(String(row))} from ${from}`);
+	//	return false;
+	//}
+
+	if (col === 0 || col === rowlen - 1) return false;
+	//if (col < 1 || col > rowlen - 1) {
+	//	console.log(`Skipping col ${underline(String(col))} from ${from}`);
+	//	return false;
+	//}
+
+	const c = full[from];
+	if (c !== "A") {
+		return false;
+	}
+
+	const ulo = calcOffset("ul", rowlen);
+	if (!ulo) {
+		console.log("no ulo!");
+		return false;
+	}
+	const uro = calcOffset("ur", rowlen);
+	if (!uro) {
+		console.log("no uro!");
+		return false;
+	}
+	const dlo = calcOffset("dl", rowlen);
+	if (!dlo) {
+		console.log("no dlo!");
+		return false;
+	}
+	const dro = calcOffset("dr", rowlen);
+	if (!dro) {
+		console.log("no dro!");
+		return false;
+	}
+
+	const ul = full[from + ulo];
+	const ur = full[from + uro];
+	const dl = full[from + dlo];
+	const dr = full[from + dro];
+
+	// If ul is M then dr must be S
+	// If ur is M then dl must be S
+	// If dl is M then ur must be S
+	// If dr is M then ul must be S
+	//
+	// ul -> dr || dr -> ul && ur -> dl || dl -> ur
+
+	if (ul !== "M" && dr !== "M") return false; // One must be M
+	if (ur !== "M" && dl !== "M") return false;
+
+	const ulTodr = ul + c + dr;
+	const drToul = dr + c + ul;
+	const uldrMas = ulTodr === "MAS" || drToul === "MAS";
+
+	const urTodl = ur + c + dl;
+	const dlTour = dl + c + ur;
+	const urdlMas = urTodl === "MAS" || dlTour === "MAS";
+
+	const isValid = uldrMas && urdlMas;
+
+	//if (isValid) {
+	//	console.log(`Found at ${underline(String(from))}`);
+	//}
+
+	return isValid;
 };
 
 const _checkAllDirs = (
@@ -212,44 +280,67 @@ export async function d4part1() {
 			const searchDirs = getValidDirections(i, searchLen, lenny, mrow);
 			const checks = checkDirs(wordsearch, searchingFor, i, lenny, searchDirs);
 			const found = Object.values(checks).filter((c) => c === true);
-			//const checks = checkAllDirs(wordsearch, searchingFor, i, lenny);
-			//const found = checks.filter((c) => c === true);
-			//console.log(`\nFrom pos ${yellow(i.toString())} can check dirs:`);
-			//console.log(searchDirs);
 			console.log(i, checks);
-			//if (found.length > 0) {
-			//	console.log(`\nFrom pos ${yellow(i.toString())} can check dirs:`);
-			//	console.log(searchDirs);
-			//	console.log(checks);
-			//}
 			matches += found.length;
 		}
+	}
 
-		//if (wordsearch[i] === searchingFor[0]) {
-		//	const checks = checkAllDirs(wordsearch, searchingFor, i, lenny);
-		//	const found = checks.filter((c) => c === true);
-		//	if (found.length > 0) {
-		//		checks.forEach((c, idx) => {
-		//			if (c === true) {
-		//				console.log(i, Dirs[idx]);
-		//			}
-		//		});
-		//	}
+	console.log(`Found ${magenta(bold(String(matches)))} matches!`);
+}
+
+/*
+Real
+Found at 12
+Found at 26
+Found at 27
+Found at 32
+Found at 34
+Found at 71
+Found at 73
+Found at 75
+Found at 77
+
+Bad
+Found at 12
+Found at 26
+Found at 27
+Found at 32
+Found at 34
+Found at 71
+Found at 73
+Found at 75
+Found at 77
+Found at 79
+*/
+
+export async function d4part2() {
+	const lines = await readInpLines("d4.txt");
+	if (!lines) {
+		console.log(red(bold("[D4P1] No input!")));
+		return;
+	}
+	//for (const line of lines) {
+	//	console.log(line);
+	//}
+	const lenny = lines[0].length;
+	const mrow = lines.length - 1;
+
+	const wordsearch = lines.join("");
+
+	let matches = 0;
+	for (let i = 0; i < wordsearch.length; i++) {
+		const isMas = checkSquare(wordsearch, i, lenny, mrow);
+		if (isMas) matches++;
+		//const isValidStart = wordsearch[i] === searchingFor[0];
+		//
+		//if (isValidStart) {
+		//	const searchDirs = getValidDirections(i, searchLen, lenny, mrow);
+		//	const checks = checkDirs(wordsearch, searchingFor, i, lenny, searchDirs);
+		//	const found = Object.values(checks).filter((c) => c === true);
+		//	console.log(i, checks);
 		//	matches += found.length;
-		//}
-
-		//if(i < lenny) {
-		//  // Row 0
-		//} else if (i >= wordsearch.length - lenny) {
-		//  // Last row
-		//} else {
-		//  // Other rows
 		//}
 	}
 
 	console.log(`Found ${magenta(bold(String(matches)))} matches!`);
-
-	//const found = checkDir(wordsearch, "XMAS", 2, lenny, "dr");
-	//console.log(wordsearch);
-	//console.log(found);
 }

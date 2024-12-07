@@ -1,7 +1,7 @@
-import { d4part1 } from "./days/d4.ts";
+import { d4part2 } from "./days/d4.ts";
 
 function main() {
-	d4part1();
+	d4part2();
 }
 
 main();
