@@ -11,6 +11,7 @@ My definitely not optimized assortment of solutions to the 2024 Advent of Code c
 | Day 2 |    *   |        |
 | Day 3 |    *   |    *   |
 | Day 4 |    *   |    *   |
+| Day 5 |    *   |        |
 
 
 ## Comments
