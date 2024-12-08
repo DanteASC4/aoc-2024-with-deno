@@ -5,13 +5,18 @@ My definitely not optimized assortment of solutions to the 2024 Advent of Code c
 ## Completion status
 
 
-|       | Part 1 | Part 2 |
-|-------|--------|--------|
-| Day 1 |    *   |    *   |
-| Day 2 |    *   |        |
-| Day 3 |    *   |    *   |
-| Day 4 |    *   |    *   |
-| Day 5 |    *   |    *   |
+|        | Part 1 | Part 2 |
+|--------|--------|--------|
+| Day 1  |    *   |    *   |
+| Day 2  |    *   |        |
+| Day 3  |    *   |    *   |
+| Day 4  |    *   |    *   |
+| Day 5  |    *   |    *   |
+| Day 6  |    *   |        |
+| Day 7  |        |        |
+| Day 8  |        |        |
+| Day 9  |        |        |
+| Day 10 |        |        |
 
 
 ## Comments
@@ -40,3 +45,11 @@ The whole time I was writing a solution for part 2, I was thinking "there's no w
 > "Finding each bad number and checking it's rules one by one sounds annoying, what if I did a sort of 'greedy' approach and just put the bad page at the very beginning, which would ensure it follows all of it's rules, then check if everything else is following the rules, and if not repeat that up to 1000 times."
 
 I'm glad that worked though, if it didn't I woulda probably just came back to this one later. I'm also **positive** that my solution for both parts is probably really slow but optimization isn't my goal here 😎.
+
+### Day 6
+
+I love the idea of this challenge!
+
+#### Part 1
+
+Thanks to what I'd done for day 4's challenge this one was pretty straightforward.
