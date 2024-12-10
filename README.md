@@ -23,7 +23,7 @@ My definitely not optimized assortment of solutions to the 2024 Advent of Code c
 
 If any!
 
-### Day 2 
+### Day 2
 
 Part 2 had me scratching my head a bit, prob because of how I did my solution to part 1. Gonna move on for now.
 
@@ -53,3 +53,7 @@ I love the idea of this challenge!
 #### Part 1
 
 Thanks to what I'd done for day 4's challenge this one was pretty straightforward.
+
+#### Part 2 
+
+Maybe I'm missing something, but I'm not seeing a simple way of tackling this, so I"m gonna move on and come back to this later. That makes two challenges to re-visit!

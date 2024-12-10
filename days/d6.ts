@@ -1,7 +1,5 @@
-import { red, bold, cyan, green, underline } from "@std/fmt/colors";
+import { red, bold, green, underline } from "@std/fmt/colors";
 import { readInpLines } from "../utils/files.ts";
-import { writeAllSync } from "@std/io";
-import { chunk } from "../utils/misc.ts";
 import { humanize } from "../utils/misc.ts";
 
 type Dir = "u" | "l" | "r" | "d";
@@ -67,6 +65,7 @@ const logMap = (map: string, rowlen: number) => {
 
 const walk = (map: string, rowlen: number) => {
 	let pos = findGuard(map);
+	const path: [number, number][] = [];
 
 	while (pos !== -1) {
 		const going = getDir(map);
@@ -100,22 +99,70 @@ const walk = (map: string, rowlen: number) => {
 			map = replaceC(map, turned, pos);
 		} else {
 			const current = map[pos];
-			//console.log("\n===");
-			//console.log(`Guard: ${current}`);
-			//console.log(`Gloc : ${pos}`);
-			//console.log(`Nloc : ${nextPos}`);
 
-			//logMap(map, rowlen);
+			const asX = nextPos % rowlen;
+			const asY = (nextPos - asX) / rowlen;
+
+			path.push([asX, asY]);
+
 			map = replaceC(map, current, nextPos);
-			//logMap(map, rowlen);
 			map = replaceC(map, "X", pos);
-			//logMap(map, rowlen);
-			//console.log("===\n");
 			pos = findGuard(map);
 		}
 	}
 
 	return map;
+};
+
+const hike = (map: string, rowlen: number) => {
+	let pos = findGuard(map);
+	const path: [number, number][] = [];
+
+	while (pos !== -1) {
+		const going = getDir(map);
+		if (going === null) {
+			console.log(going);
+			logMap(map, rowlen);
+			throw Error("Where is dude going...");
+		}
+
+		const offset = calcOffset(going, rowlen);
+		if (!offset) throw Error("Bro hit the diagonal move fs");
+
+		const nextPos = pos + offset;
+		if (nextPos > map.length || nextPos < 0) {
+			map = replaceC(map, "X", pos);
+			return { map, path };
+		}
+
+		const nextT = map[nextPos];
+		if (nextT === "#") {
+			const current = map[pos];
+			if (!isGuard(current)) {
+				return { map, path };
+			}
+
+			const turned = turn(current);
+			if (!turned) {
+				return { map, path };
+			}
+
+			map = replaceC(map, turned, pos);
+		} else {
+			const current = map[pos];
+
+			const asX = nextPos % rowlen;
+			const asY = (nextPos - asX) / rowlen;
+
+			path.push([asX, asY]);
+
+			map = replaceC(map, current, nextPos);
+			map = replaceC(map, "X", pos);
+			pos = findGuard(map);
+		}
+	}
+
+	return { map, path };
 };
 
 const countC = (s: string, c: string) => {
@@ -147,4 +194,28 @@ export async function d6part1() {
 	console.log(
 		`Guard took a hike that was ${green(underline(humanize(ans)))} tiles long!`,
 	);
+}
+
+export async function d6part2() {
+	const lines = await readInpLines("d6.txt");
+	if (!lines) {
+		console.log(red(bold("[D6P2] No input!")));
+		return;
+	}
+	const lenny = lines[0].length;
+	const theMap = lines.join("");
+
+	//logMap(theMap, lenny);
+
+	const { map, path } = hike(theMap, lenny);
+
+	console.log(path);
+
+	//logMap(done, lenny);
+
+	//const ans = countC(done, "X");
+	//
+	//console.log(
+	//	`Guard took a hike that was ${green(underline(humanize(ans)))} tiles long!`,
+	//);
 }
